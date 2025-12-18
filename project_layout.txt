@@ -1,0 +1,17 @@
+--- Folder Layout ---
+.clang-format
+[.git] (...)
+.gitignore
+CMakeLists.txt
+CMakePresets.json
+Doxyfile
+Kconfig
+README.md
+prj.conf
+project_layout.txt
+[src]
+    ├── main.cpp
+    └── [services]
+        ├── system_manager.cpp
+        └── system_manager.h
+west.yml

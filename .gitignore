@@ -1,0 +1,10 @@
+# VSCode settings
+#Build dir
+build/
+#VScode IDE config
+.vscode/
+# CMake
+cmake-build-*/
+# IntelliJ
+out/
+

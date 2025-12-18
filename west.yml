@@ -1,0 +1,19 @@
+manifest:
+  remotes:
+    - name: nrfconnect
+      url-base: https://github.com/nrfconnect
+
+  projects:
+     # The Nordic Connect SDK Manifest
+    # This automatically includes Zephyr, mbedtls, mcuboot, and the proprietary libraries.
+      - name: sdk-nrf
+        remote: nrfconnect
+        # v2.9.0 is a robust, recent stable version.
+        # (Note: NCS versions do not match Zephyr versions. NCS v2.9 uses Zephyr ~v3.7)
+        revision: v3.2.0  
+        path: nrf
+        import: true
+        west-commands: scripts/west-commands.yml
+      
+  self:
+    path: BabbiesTracker
