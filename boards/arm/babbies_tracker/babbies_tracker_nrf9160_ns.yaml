@@ -1,0 +1,13 @@
+identifier: babbies_tracker/nrf9160/ns
+name: BABBIES-TRACKER-nRF9160-Non-Secure
+type: mcu
+arch: arm
+toolchain:
+  - gnuarmemb
+  - zephyr
+ram: 128
+flash: 256
+supported:
+  - gpio
+  - i2c
+  - netif:modem

@@ -2,16 +2,50 @@
 .clang-format
 [.git] (...)
 .gitignore
+[.vscode] (...)
 CMakeLists.txt
-CMakePresets.json
 Doxyfile
 Kconfig
 README.md
+[boards]
+    └── [arm]
+        └── [babbies_tracker]
+            ├── CMakeLists.txt
+            ├── Kconfig
+            ├── Kconfig.babbies_tracker
+            ├── Kconfig.defconfig
+            ├── Kconfig.sysbuild
+            ├── adp5360_init.c
+            ├── babbies_tracker_nrf52840-pinctrl.dtsi
+            ├── babbies_tracker_nrf52840.dts
+            ├── babbies_tracker_nrf52840.yaml
+            ├── babbies_tracker_nrf52840_defconfig
+            ├── babbies_tracker_nrf9160.dts
+            ├── babbies_tracker_nrf9160.yaml
+            ├── babbies_tracker_nrf9160_common-pinctrl.dtsi
+            ├── babbies_tracker_nrf9160_common.dtsi
+            ├── babbies_tracker_nrf9160_defconfig
+            ├── babbies_tracker_nrf9160_ns.dts
+            ├── babbies_tracker_nrf9160_ns.yaml
+            ├── babbies_tracker_nrf9160_ns_defconfig
+            ├── babbies_tracker_nrf9160_partition_conf.dtsi
+            ├── babbies_tracker_pm_static.yml
+            ├── babbies_tracker_pm_static_lwm2m_carrier.yml
+            ├── babbies_tracker_pm_static_secure_boot.yml
+            ├── board.cmake
+            ├── board.yml
+            ├── [dts]
+                └── [bindings] (...)
+            ├── nrf52840_reset.c
+            ├── pre_dt_board.cmake
+            └── sysbuild.cmake
+[build] (...)
 prj.conf
 project_layout.txt
 [src]
     ├── main.cpp
     └── [services]
+        ├── CMakeLists.txt
         ├── system_manager.cpp
         └── system_manager.h
 west.yml

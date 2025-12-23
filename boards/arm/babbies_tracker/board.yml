@@ -1,0 +1,8 @@
+board:
+  name: babbies_tracker
+  vendor: iomico
+  socs:
+    - name: nrf52840
+    - name: nrf9160
+      variants:
+        - name: ns
