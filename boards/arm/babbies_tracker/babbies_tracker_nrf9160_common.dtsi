@@ -12,29 +12,99 @@
 	};
 
     /* 4. HARDWARE NODES: Define things connected to GPIOs */
+	/* Push Buttons */
+	buttons {
+		compatible = "gpio-keys";
+		button0: button_0 {
+			gpios = <&gpio0 26 (GPIO_PULL_UP | GPIO_ACTIVE_LOW)>;
+			label = "Button 1";
+		};
+	};
+	/* On/Off toggle LEDs */
+	
     leds {
-        compatible = "gpio-leds";
-        my_led: led_0 {
-            gpios = <&gpio0 29 GPIO_ACTIVE_LOW>; /* Example: LED on P0.29 */
-            label = "Status LED";
-        };
-    };
+		compatible = "gpio-leds";
+		red_led: led_1 {
+			gpios = <&gpio0 29 0>;
+			label = "RGB red channel";
+		};
+		green_led: led_2 {
+			gpios = <&gpio0 30 0>;
+			label = "RGB green channel";
+		};
+		blue_led: led_3 {
+			gpios = <&gpio0 31 0>;
+			label = "RGB blue channel";
+		};
+		sense_red_led: led_4 {
+			gpios = <&gpio0 0 0>;
+			label = "RGB red channel";
+		};
+		sense_green_led: led_5 {
+			gpios = <&gpio0 1 0>;
+			label = "RGB green channel";
+		};
+		sense_blue_led: led_6 {
+			gpios = <&gpio0 2 0>;
+			label = "RGB blue channel";
+		};
+	};
+	/* PWM channels */
+	pwmleds {
+		compatible = "pwm-leds";
+		pwm_led0: pwm_led_0 {
+			pwms = <&pwm0 0 PWM_MSEC(8) PWM_POLARITY_NORMAL>;
+		};
+		pwm_led1: pwm_led_1 {
+			pwms = <&pwm0 1 PWM_MSEC(8) PWM_POLARITY_NORMAL>;
+		};
+		pwm_led2: pwm_led_2 {
+			pwms = <&pwm0 2 PWM_MSEC(8) PWM_POLARITY_NORMAL>;
+		};
+	};
+	/* nRF52840 Reset Pin */
+	nrf52840_reset: gpio-reset {
+		compatible = "iomico,babbies_tracker-nrf52840-reset";
+		status = "okay";
+		gpios = <&gpio0 10 GPIO_ACTIVE_LOW>;
+	};	
 
     /* 5. ALIASES: Give friendly names to hardware */
     aliases {
-        led0 = &my_led;
-        bootloader-led0 = &my_led; /* Used by MCUBoot to blink */
-    };
+		sw0 = &button0;
+		led0 = &red_led;
+		led1 = &green_led;
+		led2 = &blue_led;
+		sense-led0 = &sense_red_led;
+		sense-led1 = &sense_green_led;
+		sense-led2 = &sense_blue_led;
+		pwm-led0 = &pwm_led0;
+		pwm-led1 = &pwm_led1;
+		pwm-led2 = &pwm_led2;
+		rgb-pwm = &pwm0;
+		nmos-pwm = &pwm2;
+		mcuboot-button0 = &button0;
+		mcuboot-led0 = &blue_led;
+	};
 
 };
 
 /* 6. ENABLE PERIPHERALS: Turn on the SoC blocks you need */
 &uart0 {
-    status = "okay";
-    current-speed = <115200>;
-    pinctrl-0 = <&uart0_default>; /* Look for this in pinctrl.dtsi */
-    pinctrl-1 = <&uart0_sleep>;
-    pinctrl-names = "default", "sleep";
+	compatible = "nordic,nrf-uarte";
+	current-speed = <115200>;
+	status = "okay";
+	pinctrl-0 = <&uart0_default>;
+	pinctrl-1 = <&uart0_sleep>;
+	pinctrl-names = "default", "sleep";
+};
+
+&uart1 {
+	current-speed = <1000000>;
+	status = "disabled";
+	pinctrl-0 = <&uart1_default>;
+	pinctrl-1 = <&uart1_sleep>;
+	pinctrl-names = "default", "sleep";
 };
 
 &gpiote {

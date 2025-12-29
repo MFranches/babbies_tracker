@@ -21,5 +21,5 @@ add_compile_options(-Werror)
 target_compile_options(app PRIVATE -Wno-invalid-offsetof)
 
 #Custom modules
-# add_subdirectory(src/services)
+add_subdirectory(src/services)
 
