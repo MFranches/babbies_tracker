@@ -146,7 +146,7 @@
 			reg = <0x000f0000 0xa000>;
 		};
 		storage_partition: partition@fa000 {
-			label = "storage";
+			label = "nvs-storage";
 			reg = <0x000fa000 0x00006000>;
 		};
 	};

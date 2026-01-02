@@ -12,6 +12,8 @@
 #include "services/settings_storage.h"
 #include "services/system_manager.h"
 
+#define DEBUGGER_ATTACH 0
+
 LOG_MODULE_REGISTER(main_app, LOG_LEVEL_INF);
 
 /*
@@ -36,22 +38,39 @@ void button_pressed(const struct device *dev, struct gpio_callback *cb,
     sys_reboot(SYS_REBOOT_COLD);
 }
 
-int main(void) {
-    // volatile int attach_debugger = 1;
-    // while (attach_debugger) {
-    //     // Spin here forever until YOU change 'attach_debugger' to 0
-    // }
+int main(void)
+{
+#if DEBUGGER_ATTACH
+    volatile int attach_debugger = 1;
+    while (attach_debugger) {
+        // Spin here forever until YOU change 'attach_debugger' to 0
+        k_sleep(K_MSEC(100));
+    }
+#endif
+
     LOG_INF("BabbiesTracker application started. Like a charm!\n");
 
+    if (!gpio_is_ready_dt(&led)) {
+        LOG_ERR("Error: LED device %s is not ready\n",
+                led.port->name);
+        return 0;
+    }
+    int ret = gpio_pin_configure_dt(&led, GPIO_OUTPUT_ACTIVE);
+    if (ret < 0) {
+        LOG_ERR("Error %d: failed to configure %s pin %d\n",
+                ret, led.port->name, led.pin);
+        return 0;
+    }
+
     if (!gpio_is_ready_dt(&button)) {
-		printk("Error: button device %s is not ready\n",
+		LOG_ERR("Error: button device %s is not ready\n",
 		       button.port->name);
 		return 0;
 	}
 
-	int ret = gpio_pin_configure_dt(&button, GPIO_INPUT);
+	ret = gpio_pin_configure_dt(&button, GPIO_INPUT);
 	if (ret != 0) {
-		printk("Error %d: failed to configure %s pin %d\n",
+		LOG_ERR("Error %d: failed to configure %s pin %d\n",
 		       ret, button.port->name, button.pin);
 		return 0;
 	}
@@ -59,31 +78,16 @@ int main(void) {
 	ret = gpio_pin_interrupt_configure_dt(&button,
 					      GPIO_INT_EDGE_TO_ACTIVE);
 	if (ret != 0) {
-		printk("Error %d: failed to configure interrupt on %s pin %d\n",
+		LOG_ERR("Error %d: failed to configure interrupt on %s pin %d\n",
 			ret, button.port->name, button.pin);
 		return 0;
 	}
 
 	gpio_init_callback(&button_cb_data, button_pressed, BIT(button.pin));
 	gpio_add_callback(button.port, &button_cb_data);
-	printk("Set up button at %s pin %d\n", button.port->name, button.pin);
-    // int err;
-    // 1. Initialize the LTE Modem (Required for nRF9160 system stability)
-    // This boots the modem core, even if we don't connect to a tower yet.
-    // LOG_INF("Initializing LTE modem...\n");
-    // err = lte_lc_init();
-    // if (err) {
-    //     LOG_ERR("Failed to init LTE modem: %d\n", err);
-    // }
-    // LOG_INF("LTE modem initialized.\n");
-    if (!gpio_is_ready_dt(&led)) {
-        return 0;
-    }
-    ret = gpio_pin_configure_dt(&led, GPIO_OUTPUT_ACTIVE);
-    if (ret < 0) {
-        return 0;
-    }
-    // 2. Fetch the BME680 Sensor
+	LOG_INF("Set up button at %s pin %d\n", button.port->name, button.pin);    
+    
+    // Fetch the BME680 Sensor
     // The device name "BME680" must match your devicetree label/node
     // const struct device *dev = DEVICE_DT_GET_ANY(bosch_bme680);
 
@@ -91,6 +95,16 @@ int main(void) {
     //     LOG_ERR("Sensor BME680 not ready!\n");
     //     return 0;
     // }
+
+    // int err;
+    // Initialize the LTE Modem (Required for nRF9160 system stability)
+    // This boots the modem core, even if we don't connect to a tower yet.
+    // LOG_INF("Initializing LTE modem...\n");
+    // err = lte_lc_init();
+    // if (err) {
+    //     LOG_ERR("Failed to init LTE modem: %d\n", err);
+    // }
+    // LOG_INF("LTE modem initialized.\n");
 
     Services::SystemManager &system = Services::SystemManager::getInstance();
     system.init();
@@ -101,7 +115,8 @@ int main(void) {
         LOG_ERR("Failed to initialize Settings Storage: %d", ret);
         return ret;
     }
-
+    // settings.SetKey(Services::SettingsStorage::KEY_CELL_APN, (void *)"my_apn_new", strlen("my_apn_new")+1);
+    // settings.SetKey(Services::SettingsStorage::KEY_CELL_PASS, (void *)"my_pass_new", strlen("my_pass_new")+1);
     while (1) {
         ret = gpio_pin_toggle_dt(&led);
         // Fetch fresh data
