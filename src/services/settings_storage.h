@@ -38,8 +38,10 @@ namespace Services {
 
         int SetKey(key_t key, void *data, size_t size);
         int GetKey(key_t key, void *data, size_t size);
+        const bool isInitialized() const { return initialized; }
 
       private:
         SettingsStorage();
+        bool initialized = false;
     };
 } // namespace Services

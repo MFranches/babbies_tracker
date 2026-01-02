@@ -31,35 +31,33 @@ static int cellRootHandleSet(const char *name, size_t length,
                 settings_read_cb readCallBack, void *callBackArguments)
 {
     const char *next;
-    size_t next_len;
+    size_t nameLength;
     int rc;
     printk("cellRootHandleSet: name=%s length=%zu", name, length);
-
-	if (settings_name_steq(name, "apn", &next) && !next) {
-		if (length != sizeof(apn)) {
-			return -EINVAL;
-		}
-		rc = readCallBack(callBackArguments, &apn, sizeof(apn));
-		printk("<cell/apn> = %s\n", apn);
-		return 0;
-	}
-
-	next_len = settings_name_next(name, &next);
-
+	nameLength = settings_name_next(name, &next);
 	if (!next) {
-		return -ENOENT;
-	}
-
-	if (!strncmp(name, "pass", next_len)) {
-		next_len = settings_name_next(name, &next);
-
-		if (!next) {
-			rc = readCallBack(callBackArguments, &pass, sizeof(pass));
-			printk("<cell/pass> = %s\n", pass);
+		if (!strncmp(name, "apn", nameLength)) {
+			rc = readCallBack(callBackArguments, apn, sizeof(apn)-1);
+			printk("<cell/apn> = %s\n", apn);
 			return 0;
 		}
-		
-		return -ENOENT;
+
+		if (!strncmp(name, "pass", nameLength)) {
+			if (length > sizeof(pass) - 1) {
+				printk("<cell/pass> is not compatible "
+				       "with the application\n");
+				return -EINVAL;
+			}
+			rc = readCallBack(callBackArguments, pass,
+				     sizeof(pass)-1);
+			if (rc < 0) {
+				return rc;
+			} else if (rc > 0) {
+				printk("<cell/pass> = %s\n",
+				       pass);
+			}
+			return 0;
+		}
 	}
 
 	return -ENOENT;
@@ -83,8 +81,8 @@ static int cellRootHandleExport(int (*cb)(const char *name,
 			       const void *value, size_t val_len))
 {
 	LOG_INF("Export keys under <cell> handler\n");
-	(void)cb("cell/apn", &apn, sizeof(apn));
-	(void)cb("cell/pass", &pass, sizeof(pass));
+	(void)cb(SettingsStorage::KEY_CELL_APN.data(), &apn, sizeof(apn));
+	(void)cb(SettingsStorage::KEY_CELL_PASS.data(), &pass, sizeof(pass));
 
 	return 0;
 }
@@ -108,19 +106,16 @@ int SettingsStorage::init()
         LOG_ERR("Failed to initialize settings subsystem: %d", error);
         return error;
     }
-
-    // Register handlers
-    error = settings_register(&cellRootHandle);
-	if (error) {
-        LOG_ERR("Failed to register cellular data handler: %d", error);
-        return error;
-    }
     
 	error = settings_load();
 	if (error) {
 		LOG_ERR("Failed to load settings: %d", error);
 		return error;
 	}
+	LOG_INF("Initialized SettingsStorage");
+	LOG_INF("cell/apn = %s", apn);
+	LOG_INF("cell/pass = %s", pass);
+	initialized = true;
     return 0;
 }
 
@@ -129,6 +124,18 @@ int SettingsStorage::SetKey(key_t key, void* data, size_t size) {
 	if (error) {
 		LOG_ERR("Failed to set key %s: %d", key.data(), error);
 		return error;
+	}
+	return 0;
+}
+
+int SettingsStorage::GetKey(key_t key, void* data, size_t size) {
+	if (key == KEY_CELL_APN) {
+		strncpy((char*)data, apn, size);
+	} else if (key == KEY_CELL_PASS) {
+		strncpy((char*)data, pass, size);
+	} else {
+		LOG_ERR("Key %s not found", key.data());
+		return -ENOENT;
 	}
 	return 0;
 }
