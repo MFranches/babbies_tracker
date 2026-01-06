@@ -11,6 +11,9 @@
 // App modules
 #include "services/settings_storage.h"
 #include "services/system_manager.h"
+#include <zephyr/device.h>
+#include <zephyr/drivers/sensor.h>
+#include "our_drivers/our_bme680.h" // <--- Your custom API
 
 #define DEBUGGER_ATTACH 0
 
@@ -79,12 +82,12 @@ int main(void) {
 
     // Fetch the BME680 Sensor
     // The device name "BME680" must match your devicetree label/node
-    // const struct device *dev = DEVICE_DT_GET_ANY(bosch_bme680);
+    const struct device *dev = DEVICE_DT_GET_ANY(our_bme680);
 
-    // if (!device_is_ready(dev)) {
-    //     LOG_ERR("Sensor BME680 not ready!\n");
-    //     return 0;
-    // }
+    if (!device_is_ready(dev)) {
+        LOG_ERR("Sensor BME680 not ready!\n");
+        // return 0;
+    }
 
     // int err;
     // Initialize the LTE Modem (Required for nRF9160 system stability)

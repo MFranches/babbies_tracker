@@ -1,0 +1,1 @@
+rsource "drivers/sensor/our_bme680/Kconfig"

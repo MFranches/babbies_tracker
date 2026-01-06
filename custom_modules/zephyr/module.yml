@@ -1,4 +1,4 @@
-name: my_custom_drivers
+name: custom_modules
 build:
   # Tells West that the root CMakeLists.txt is in the module root (.)
   cmake: .
