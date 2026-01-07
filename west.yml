@@ -12,6 +12,11 @@ manifest:
         path: nrf
         import: true
         west-commands: scripts/west-commands.yml
+        
+      - name: my-driver-module
+        url: https://github.com/yourname/our-driver-module # or local path
+        revision: main
+        path: modules/lib/our_driver_module
       
   self:
     path: BabbiesTracker

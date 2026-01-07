@@ -1,0 +1,9 @@
+name: custom_modules
+build:
+  # Tells West that the root CMakeLists.txt is in the module root (.)
+  cmake: .
+  # Tells West that the root Kconfig file is in the module root
+  kconfig: Kconfig
+  # Tells West to look for dts/bindings/ in the module root
+  settings:
+    dts_root: .

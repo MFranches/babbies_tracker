@@ -1,3 +1,5 @@
 menu "Zephyr Kernel Configuration"
     source "Kconfig.zephyr"
 endmenu
+
+rsource "custom_modules/Kconfig"

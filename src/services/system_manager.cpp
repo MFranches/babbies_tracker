@@ -8,6 +8,8 @@ LOG_MODULE_REGISTER(system_manager, LOG_LEVEL_INF);
 
 using Services::SystemManager;
 
+SystemManager::SystemManager() {}
+
 SystemManager& SystemManager::getInstance() {
     static SystemManager instance;
     return instance;

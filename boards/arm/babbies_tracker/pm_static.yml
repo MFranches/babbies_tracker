@@ -179,3 +179,7 @@ tfm_sram:
     - start
   region: sram_primary
   size: 0x8000
+nvs_storage:
+  address: 0xfa000       # Matches your desired DTS address
+  size: 0x6000           # 24KB
+  region: flash_primary

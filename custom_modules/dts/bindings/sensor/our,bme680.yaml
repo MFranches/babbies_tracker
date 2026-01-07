@@ -1,0 +1,18 @@
+# This file describes the hardware interface for your driver.
+# Zephyr uses this to validate the device tree and generate macros.
+
+description:
+  My custom BME680 driver binding.
+  The BME680 is an environmental sensor for temperature, humidity, pressure, and gas quality.
+
+# This matches the 'compatible' string in your .overlay file
+compatible: "our,bme680"
+
+# Inherit standard I2C properties (like 'reg' for the address)
+include: [sensor-device.yaml, i2c-device.yaml]
+
+# properties:
+    # You can add custom properties here later, for example:
+    # gas-heater-default-temp:
+    #   type: int
+    #   description: Default temp in C for the heater

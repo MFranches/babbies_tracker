@@ -4,45 +4,180 @@
     model = "Babbies Tracker nRF9160";
     compatible = "babbies_tracker,nrf9160";
 
-    /* 3. CHOSEN NODES: Tell Zephyr which hardware to use for system functions */
+    /**< CHOSEN NODES: Tell Zephyr which hardware to use for system functions */
    chosen {
 		zephyr,console = &uart0;
 		zephyr,shell-uart = &uart0;
 		zephyr,uart-mcumgr = &uart0;
 	};
-
-    /* 4. HARDWARE NODES: Define things connected to GPIOs */
+    /**< HARDWARE NODES: Define things connected to GPIOs */
+	/**< Push Buttons */
+	buttons {
+		compatible = "gpio-keys";
+		button0: button_0 {
+			gpios = <&gpio0 26 (GPIO_PULL_UP | GPIO_ACTIVE_LOW)>;
+			label = "Button 1";
+		};
+	};
+	/**< On/Off toggle LEDs */	
     leds {
-        compatible = "gpio-leds";
-        my_led: led_0 {
-            gpios = <&gpio0 29 GPIO_ACTIVE_LOW>; /* Example: LED on P0.29 */
-            label = "Status LED";
-        };
-    };
-
-    /* 5. ALIASES: Give friendly names to hardware */
+		compatible = "gpio-leds";
+		red_led: led_1 {
+			gpios = <&gpio0 29 0>;
+			label = "RGB red channel";
+		};
+		green_led: led_2 {
+			gpios = <&gpio0 30 0>;
+			label = "RGB green channel";
+		};
+		blue_led: led_3 {
+			gpios = <&gpio0 31 0>;
+			label = "RGB blue channel";
+		};
+		sense_red_led: led_4 {
+			gpios = <&gpio0 0 0>;
+			label = "RGB red channel";
+		};
+		sense_green_led: led_5 {
+			gpios = <&gpio0 1 0>;
+			label = "RGB green channel";
+		};
+		sense_blue_led: led_6 {
+			gpios = <&gpio0 2 0>;
+			label = "RGB blue channel";
+		};
+	};
+	/**< PWM channels */
+	pwmleds {
+		compatible = "pwm-leds";
+		pwm_led0: pwm_led_0 {
+			pwms = <&pwm0 0 PWM_MSEC(8) PWM_POLARITY_NORMAL>;
+		};
+		pwm_led1: pwm_led_1 {
+			pwms = <&pwm0 1 PWM_MSEC(8) PWM_POLARITY_NORMAL>;
+		};
+		pwm_led2: pwm_led_2 {
+			pwms = <&pwm0 2 PWM_MSEC(8) PWM_POLARITY_NORMAL>;
+		};
+	};
+	/**< nRF52840 Reset Pin */
+	nrf52840_reset: gpio-reset {
+		compatible = "iomico,babbies_tracker-nrf52840-reset";
+		status = "okay";
+		gpios = <&gpio0 10 GPIO_ACTIVE_LOW>;
+	};
+    /**< ALIASES: Give friendly names to hardware */
     aliases {
-        led0 = &my_led;
-        bootloader-led0 = &my_led; /* Used by MCUBoot to blink */
-    };
-
+		sw0 = &button0;
+		led0 = &red_led;
+		led1 = &green_led;
+		led2 = &blue_led;
+		sense-led0 = &sense_red_led;
+		sense-led1 = &sense_green_led;
+		sense-led2 = &sense_blue_led;
+		pwm-led0 = &pwm_led0;
+		pwm-led1 = &pwm_led1;
+		pwm-led2 = &pwm_led2;
+		rgb-pwm = &pwm0;
+		nmos-pwm = &pwm2;
+		mcuboot-button0 = &button0;
+		mcuboot-led0 = &blue_led;
+	};
 };
 
-/* 6. ENABLE PERIPHERALS: Turn on the SoC blocks you need */
+/**< ENABLE PERIPHERALS: Turn on the SoC blocks you need */
+/**< Enable UART0 for console, shell, and mcumgr */
 &uart0 {
-    status = "okay";
-    current-speed = <115200>;
-    pinctrl-0 = <&uart0_default>; /* Look for this in pinctrl.dtsi */
-    pinctrl-1 = <&uart0_sleep>;
-    pinctrl-names = "default", "sleep";
+	compatible = "nordic,nrf-uarte";
+	current-speed = <115200>;
+	status = "okay";
+	pinctrl-0 = <&uart0_default>;
+	pinctrl-1 = <&uart0_sleep>;
+	pinctrl-names = "default", "sleep";
 };
-
+/**< Disable UART1 (not used) */
+&uart1 {
+	current-speed = <1000000>;
+	status = "disabled";
+	pinctrl-0 = <&uart1_default>;
+	pinctrl-1 = <&uart1_sleep>;
+	pinctrl-names = "default", "sleep";
+};
+/**< Enable GPIOs */
 &gpiote {
 	status = "okay";
 };
-/* 7. Enable GPIO */
 &gpio0 {
 	status = "okay";
+};
+/**< Enable I2C and connected devices */
+&i2c2 {
+	compatible = "nordic,nrf-twim";
+	status = "okay";
+	clock-frequency = <I2C_BITRATE_FAST>;
+
+	pinctrl-0 = <&i2c2_default>;
+	pinctrl-1 = <&i2c2_sleep>;
+	pinctrl-names = "default", "sleep";
+	/**< Connected I2C devices */
+	/**< BME680 Environmental Sensor */
+	bme680: bme680@76 {
+		compatible = "our,bme680";
+		reg = <0x76>;
+	};
+	/**< BH1749 Color Sensor */
+	bh1749: bh1749@38 {
+		compatible = "rohm,bh1749";
+		reg = <0x38>;
+		int-gpios = <&gpio0 27 (GPIO_PULL_UP | GPIO_ACTIVE_LOW)>;
+	};
+	/**< ADP5360 Power Management IC */
+	pmic@46 {
+		compatible = "adi,adp5360";
+		reg = <0x46>;
+
+		regulators {
+			compatible = "adi,adp5360-regulator";
+
+			BUCK {
+				regulator-min-microvolt = <1800000>;
+				regulator-max-microvolt = <1800000>;
+				regulator-init-microvolt = <1800000>;
+				regulator-always-on;
+				adi,enable-output-discharge;
+			};
+
+			BUCKBOOST {
+				regulator-min-microvolt = <3300000>;
+				regulator-max-microvolt = <3300000>;
+				regulator-init-microvolt = <3300000>;
+				regulator-always-on;
+			};
+		};
+	};
+};
+
+&spi3 {
+	compatible = "nordic,nrf-spim";
+	status = "okay";
+	cs-gpios = <&gpio0 8 GPIO_ACTIVE_LOW>, <&gpio0 7 GPIO_ACTIVE_LOW>;
+
+	pinctrl-0 = <&spi3_default>;
+	pinctrl-1 = <&spi3_sleep>;
+	pinctrl-names = "default", "sleep";
+	adxl362: adxl362@0 {
+		compatible = "adi,adxl362";
+		spi-max-frequency = <8000000>;
+		reg = <0>;
+		int1-gpios = <&gpio0 9 0>;
+	};
+
+	adxl372: adxl372@1 {
+		compatible = "adi,adxl372";
+		spi-max-frequency = <8000000>;
+		reg = <1>;
+		int1-gpios = <&gpio0 6 0>;
+	};
 };
 
 &flash0 {
@@ -76,7 +211,7 @@
 			reg = <0x000f0000 0xa000>;
 		};
 		storage_partition: partition@fa000 {
-			label = "storage";
+			label = "nvs-storage";
 			reg = <0x000fa000 0x00006000>;
 		};
 	};
