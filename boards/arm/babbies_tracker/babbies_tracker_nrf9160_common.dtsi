@@ -1,0 +1,107 @@
+#include "babbies_tracker_nrf9160_common-pinctrl.dtsi" /* 2. IMPORT YOUR PIN MAPS */
+
+/ {
+    model = "Babbies Tracker nRF9160";
+    compatible = "babbies_tracker,nrf9160";
+
+    /* 3. CHOSEN NODES: Tell Zephyr which hardware to use for system functions */
+   chosen {
+		zephyr,console = &uart0;
+		zephyr,shell-uart = &uart0;
+		zephyr,uart-mcumgr = &uart0;
+	};
+
+    /* 4. HARDWARE NODES: Define things connected to GPIOs */
+    leds {
+        compatible = "gpio-leds";
+        my_led: led_0 {
+            gpios = <&gpio0 29 GPIO_ACTIVE_LOW>; /* Example: LED on P0.29 */
+            label = "Status LED";
+        };
+    };
+
+    /* 5. ALIASES: Give friendly names to hardware */
+    aliases {
+        led0 = &my_led;
+        bootloader-led0 = &my_led; /* Used by MCUBoot to blink */
+    };
+
+};
+
+/* 6. ENABLE PERIPHERALS: Turn on the SoC blocks you need */
+&uart0 {
+    status = "okay";
+    current-speed = <115200>;
+    pinctrl-0 = <&uart0_default>; /* Look for this in pinctrl.dtsi */
+    pinctrl-1 = <&uart0_sleep>;
+    pinctrl-names = "default", "sleep";
+};
+
+&gpiote {
+	status = "okay";
+};
+/* 7. Enable GPIO */
+&gpio0 {
+	status = "okay";
+};
+
+&flash0 {
+	/*
+	 * For more information, see:
+	 * http://docs.zephyrproject.org/devices/dts/flash_partitions.html
+	 */
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		boot_partition: partition@0 {
+			label = "mcuboot";
+			reg = <0x00000000 0x10000>;
+		};
+		slot0_partition: partition@10000 {
+			label = "image-0";
+		};
+		slot0_ns_partition: partition@40000 {
+			label = "image-0-nonsecure";
+		};
+		slot1_partition: partition@80000 {
+			label = "image-1";
+		};
+		slot1_ns_partition: partition@b0000 {
+			label = "image-1-nonsecure";
+		};
+		scratch_partition: partition@f0000 {
+			label = "image-scratch";
+			reg = <0x000f0000 0xa000>;
+		};
+		storage_partition: partition@fa000 {
+			label = "storage";
+			reg = <0x000fa000 0x00006000>;
+		};
+	};
+};
+
+/ {
+
+	reserved-memory {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges;
+
+		sram0_s: image_s@20000000 {
+			/* Secure image memory */
+		};
+
+		sram0_bsd: image_bsd@20010000 {
+			/* BSD (shared) memory */
+		};
+
+		sram0_ns: image_ns@20020000 {
+			/* Non-Secure image memory */
+		};
+	};
+};
+
+/* Include partition configuration file */
+#include "babbies_tracker_nrf9160_partition_conf.dtsi"
